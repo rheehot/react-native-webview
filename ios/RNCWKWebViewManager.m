@@ -58,6 +58,8 @@ RCT_EXPORT_VIEW_PROPERTY(allowsLinkPreview, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(messagingEnabled, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(onMessage, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onScroll, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(userScript, NSString)
+RCT_EXPORT_VIEW_PROPERTY(userScriptForMainFrameOnly, BOOL)
 
 RCT_EXPORT_METHOD(postMessage:(nonnull NSNumber *)reactTag message:(NSString *)message)
 {
