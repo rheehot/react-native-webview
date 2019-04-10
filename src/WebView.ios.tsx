@@ -324,6 +324,8 @@ class WebView extends React.Component<IOSWebViewProps, State> {
       scalesPageToFit = this.props.useWebKit ? undefined : true,
       style,
       useWebKit,
+      userScript,
+      userScriptForMainFrameOnly,
       ...otherProps
     } = this.props;
 
@@ -387,6 +389,8 @@ class WebView extends React.Component<IOSWebViewProps, State> {
         scalesPageToFit={scalesPageToFit}
         // TODO: find a better way to type this.
         source={resolveAssetSource(this.props.source as ImageSourcePropType)}
+        userScript={userScript}
+        userScriptForMainFrameOnly={userScriptForMainFrameOnly}
         style={webViewStyles}
         {...nativeConfig.props}
       />
