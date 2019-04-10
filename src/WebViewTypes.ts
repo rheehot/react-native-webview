@@ -272,6 +272,8 @@ export interface IOSNativeWebViewProps extends CommonNativeWebViewProps {
   scrollEnabled?: boolean;
   useSharedProcessPool?: boolean;
   onContentProcessDidTerminate: (event: WebViewTerminatedEvent) => void;
+  userScript?: string,
+  userScriptForMainFrameOnly?: boolean,
 }
 
 export interface IOSWebViewProps extends WebViewSharedProps {
@@ -696,4 +698,18 @@ export interface WebViewSharedProps extends ViewProps {
    * Should caching be enabled. Default is true.
    */
   cacheEnabled?: boolean;
+
+  /**
+    * The script will be injected into the webpage after the document finishes loading.
+    * @platform ios
+    */
+   userScript?: string;
+
+   /**
+    * A Boolean value indicating whether the script should be injected
+    * only into the main frame(true) or into all frames(false).
+    * The default value is `false`.
+    * @platform ios
+    */
+   userScriptForMainFrameOnly?: boolean;
 }
