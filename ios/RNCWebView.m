@@ -138,7 +138,11 @@ static NSURLCredential* clientAuthenticationCredential;
          "  postMessage: function (data) {"
          "    window.webkit.messageHandlers.%@.postMessage(String(data));"
          "  }"
-         "};", MessageHandlerName, MessageHandlerName
+        "};"
+        "window.postMessage = function(data) {"
+        "  window.ReactNativeWebView.postMessage(data);"
+        "};"
+        , MessageHandlerName, MessageHandlerName
       ];
 
       WKUserScript *script = [[WKUserScript alloc] initWithSource:source injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
@@ -219,6 +223,13 @@ static NSURLCredential* clientAuthenticationCredential;
                                                            forMainFrameOnly:YES];
         [wkWebViewConfig.userContentController addUserScript:cookieInScript];
       }
+    }
+
+    if (_userScript) {
+      WKUserScript *userScript = [[WKUserScript alloc] initWithSource:_userScript
+                                                        injectionTime:WKUserScriptInjectionTimeAtDocumentEnd
+                                                     forMainFrameOnly:_userScriptForMainFrameOnly];
+      [wkWebViewConfig.userContentController addUserScript:userScript];
     }
 
     _webView = [[WKWebView alloc] initWithFrame:self.bounds configuration: wkWebViewConfig];
@@ -613,7 +624,7 @@ static NSURLCredential* clientAuthenticationCredential;
 {
   NSDictionary *eventInitDict = @{@"data": message};
   NSString *source = [NSString
-    stringWithFormat:@"window.dispatchEvent(new MessageEvent('message', %@));",
+                      stringWithFormat:@"document.dispatchEvent(new MessageEvent('message', %@));",
     RCTJSONStringify(eventInitDict, NULL)
   ];
   [self injectJavaScript: source];

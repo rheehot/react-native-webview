@@ -51,6 +51,8 @@
 @property (nonatomic, assign) BOOL showsVerticalScrollIndicator;
 @property (nonatomic, assign) BOOL directionalLockEnabled;
 @property (nonatomic, copy) NSString *allowingReadAccessToURL;
+@property (nonatomic, copy) NSString *userScript;
+@property (nonatomic, assign) BOOL userScriptForMainFrameOnly;
 
 + (void)setClientAuthenticationCredential:(nullable NSURLCredential*)credential;
 - (void)postMessage:(NSString *)message;
