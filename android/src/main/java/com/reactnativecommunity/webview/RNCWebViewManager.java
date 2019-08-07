@@ -153,11 +153,64 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     return new RNCWebView(reactContext);
   }
 
+  protected RNCWebChromeClient createRNCWebChromeClientInstance(ThemedReactContext reactContext, WebView webView) {
+    if (mAllowsFullscreenVideo) {
+      return new RNCWebChromeClient(reactContext, webView) {
+        @Override
+        public void onShowCustomView(View view, CustomViewCallback callback) {
+          if (mVideoView != null) {
+            callback.onCustomViewHidden();
+            return;
+          }
+
+          mVideoView = view;
+          mCustomViewCallback = callback;
+
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            mVideoView.setSystemUiVisibility(FULLSCREEN_SYSTEM_UI_VISIBILITY);
+            mReactContext.getCurrentActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+          }
+
+          mVideoView.setBackgroundColor(Color.BLACK);
+          getRootView().addView(mVideoView, FULLSCREEN_LAYOUT_PARAMS);
+          mWebView.setVisibility(View.GONE);
+
+          mReactContext.addLifecycleEventListener(this);
+        }
+
+        @Override
+        public void onHideCustomView() {
+          if (mVideoView == null) {
+            return;
+          }
+
+          mVideoView.setVisibility(View.GONE);
+          getRootView().removeView(mVideoView);
+          mCustomViewCallback.onCustomViewHidden();
+
+          mVideoView = null;
+          mCustomViewCallback = null;
+
+          mWebView.setVisibility(View.VISIBLE);
+
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            mReactContext.getCurrentActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+          }
+
+          mReactContext.removeLifecycleEventListener(this);
+        }
+      };
+    }
+
+    return new RNCWebChromeClient(reactContext, webView);
+  }
+
   @Override
   @TargetApi(Build.VERSION_CODES.LOLLIPOP)
   protected WebView createViewInstance(ThemedReactContext reactContext) {
     RNCWebView webView = createRNCWebViewInstance(reactContext);
-    setupWebChromeClient(reactContext, webView);
+    RNCWebChromeClient webChromeClient = createRNCWebChromeClientInstance(reactContext, webView);
+    setupWebChromeClient(webChromeClient, webView);
     reactContext.addLifecycleEventListener(webView);
     mWebViewConfig.configWebView(webView);
     WebSettings settings = webView.getSettings();
@@ -362,7 +415,7 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
   public void setMessagingEnabled(WebView view, boolean enabled) {
     ((RNCWebView) view).setMessagingEnabled(enabled);
   }
-   
+
   @ReactProp(name = "incognito")
   public void setIncognito(WebView view, boolean enabled) {
     // Remove all previous cookies
@@ -469,7 +522,9 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     WebView view,
     @Nullable Boolean allowsFullscreenVideo) {
     mAllowsFullscreenVideo = allowsFullscreenVideo != null && allowsFullscreenVideo;
-    setupWebChromeClient((ReactContext)view.getContext(), view);
+
+    RNCWebChromeClient webChromeClient = createRNCWebChromeClientInstance((ThemedReactContext)view.getContext(), view);
+    setupWebChromeClient(webChromeClient, view);
   }
 
   @ReactProp(name = "allowFileAccess")
@@ -587,61 +642,13 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     return reactContext.getNativeModule(RNCWebViewModule.class);
   }
 
-  protected void setupWebChromeClient(ReactContext reactContext, WebView webView) {
-    if (mAllowsFullscreenVideo) {
-      mWebChromeClient = new RNCWebChromeClient(reactContext, webView) {
-        @Override
-        public void onShowCustomView(View view, CustomViewCallback callback) {
-          if (mVideoView != null) {
-            callback.onCustomViewHidden();
-            return;
-          }
-
-          mVideoView = view;
-          mCustomViewCallback = callback;
-
-          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            mVideoView.setSystemUiVisibility(FULLSCREEN_SYSTEM_UI_VISIBILITY);
-            mReactContext.getCurrentActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-          }
-
-          mVideoView.setBackgroundColor(Color.BLACK);
-          getRootView().addView(mVideoView, FULLSCREEN_LAYOUT_PARAMS);
-          mWebView.setVisibility(View.GONE);
-
-          mReactContext.addLifecycleEventListener(this);
-        }
-
-        @Override
-        public void onHideCustomView() {
-          if (mVideoView == null) {
-            return;
-          }
-
-          mVideoView.setVisibility(View.GONE);
-          getRootView().removeView(mVideoView);
-          mCustomViewCallback.onCustomViewHidden();
-
-          mVideoView = null;
-          mCustomViewCallback = null;
-
-          mWebView.setVisibility(View.VISIBLE);
-
-          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            mReactContext.getCurrentActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-          }
-
-          mReactContext.removeLifecycleEventListener(this);
-        }
-      };
-      webView.setWebChromeClient(mWebChromeClient);
-    } else {
-      if (mWebChromeClient != null) {
-        mWebChromeClient.onHideCustomView();
-      }
-      mWebChromeClient = new RNCWebChromeClient(reactContext, webView);
-      webView.setWebChromeClient(mWebChromeClient);
+  protected void setupWebChromeClient(RNCWebChromeClient webChromeClient, WebView webView) {
+    if (mWebChromeClient != null) {
+      mWebChromeClient.onHideCustomView();
     }
+
+    mWebChromeClient = webChromeClient;
+    webView.setWebChromeClient(mWebChromeClient);
   }
 
   protected static class RNCWebViewClient extends WebViewClient {
