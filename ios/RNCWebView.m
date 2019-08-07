@@ -161,9 +161,6 @@ static NSDictionary* customCertificatesForHost;
          "    window.webkit.messageHandlers.%@.postMessage(String(data));"
          "  }"
         "};"
-        "window.postMessage = function(data) {"
-        "  window.ReactNativeWebView.postMessage(data);"
-        "};"
         , MessageHandlerName, MessageHandlerName
       ];
 
