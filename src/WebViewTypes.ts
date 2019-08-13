@@ -270,6 +270,7 @@ export interface IOSNativeWebViewProps extends CommonNativeWebViewProps {
   useSharedProcessPool?: boolean;
   userScript?: string,
   userScriptForMainFrameOnly?: boolean,
+  customSchemeEnabled?: boolean,
 }
 
 export interface IOSWebViewProps extends WebViewSharedProps {
@@ -539,7 +540,7 @@ export interface AndroidWebViewProps extends WebViewSharedProps {
    * @platform android
    */
   mixedContentMode?: 'never' | 'always' | 'compatibility';
-  
+
   /**
    * Sets ability to open fullscreen videos on Android devices.
   */
@@ -689,4 +690,6 @@ export interface WebViewSharedProps extends ViewProps {
     * @platform ios
     */
    userScriptForMainFrameOnly?: boolean;
+
+   customSchemeEnabled?: boolean;
 }

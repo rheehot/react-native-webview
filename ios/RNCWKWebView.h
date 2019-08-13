@@ -51,6 +51,7 @@
 @property (nonatomic, assign) BOOL directionalLockEnabled;
 @property (nonatomic, copy) NSString *userScript;
 @property (nonatomic, assign) BOOL userScriptForMainFrameOnly;
+@property (nonatomic, assign) BOOL customSchemeEnabled;
 
 + (void)setClientAuthenticationCredential:(nullable NSURLCredential*)credential;
 - (void)postMessage:(NSString *)message;
