@@ -271,6 +271,7 @@ export interface IOSNativeWebViewProps extends CommonNativeWebViewProps {
   useSharedProcessPool?: boolean;
   userScript?: string,
   userScriptForMainFrameOnly?: boolean,
+  customSchemeEnabled?: boolean,
 }
 
 export interface IOSWebViewProps extends WebViewSharedProps {
@@ -697,4 +698,6 @@ export interface WebViewSharedProps extends ViewProps {
     * @platform ios
     */
    userScriptForMainFrameOnly?: boolean;
+
+   customSchemeEnabled?: boolean;
 }

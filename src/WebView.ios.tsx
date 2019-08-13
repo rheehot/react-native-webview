@@ -277,6 +277,7 @@ class WebView extends React.Component<IOSWebViewProps, State> {
       style,
       userScript,
       userScriptForMainFrameOnly,
+      customSchemeEnabled,
       ...otherProps
     } = this.props;
 
@@ -331,6 +332,7 @@ class WebView extends React.Component<IOSWebViewProps, State> {
         source={resolveAssetSource(this.props.source as ImageSourcePropType)}
         userScript={userScript}
         userScriptForMainFrameOnly={userScriptForMainFrameOnly}
+        customSchemeEnabled={customSchemeEnabled}
         style={webViewStyles}
         {...nativeConfig.props}
       />
