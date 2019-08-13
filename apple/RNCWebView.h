@@ -69,6 +69,8 @@
 @property (nonatomic, assign) WKContentMode contentMode;
 #endif
 
+@property (nonatomic, assign) BOOL customSchemeEnabled;
+
 + (void)setClientAuthenticationCredential:(nullable NSURLCredential*)credential;
 + (void)setCustomCertificatesForHost:(nullable NSDictionary *)certificates;
 - (void)postMessage:(NSString *_Nullable)message;
