@@ -309,6 +309,7 @@ export interface IOSNativeWebViewProps extends CommonNativeWebViewProps {
   injectedJavaScriptForMainFrameOnly?: boolean;
   injectedJavaScriptBeforeContentLoadedForMainFrameOnly?: boolean;
   onFileDownload?: (event: FileDownloadEvent) => void;
+  customSchemeEnabled?: boolean;
 }
 
 export interface MacOSNativeWebViewProps extends CommonNativeWebViewProps {
@@ -718,7 +719,7 @@ export interface AndroidWebViewProps extends WebViewSharedProps {
    */
   geolocationEnabled?: boolean;
 
-  
+
   /**
    * Boolean that sets whether JavaScript running in the context of a file
    * scheme URL should be allowed to access content from other file scheme URLs.
@@ -952,4 +953,6 @@ export interface WebViewSharedProps extends ViewProps {
    * Should caching be enabled. Default is true.
    */
   cacheEnabled?: boolean;
+
+   customSchemeEnabled?: boolean;
 }
