@@ -292,6 +292,7 @@ class WebView extends React.Component<IOSWebViewProps, State> {
       renderLoading,
       style,
       containerStyle,
+      customSchemeEnabled,
       ...otherProps
     } = this.props;
 
@@ -347,6 +348,7 @@ class WebView extends React.Component<IOSWebViewProps, State> {
         ref={this.webViewRef}
         // TODO: find a better way to type this.
         source={resolveAssetSource(this.props.source as ImageSourcePropType)}
+        customSchemeEnabled={customSchemeEnabled}
         style={webViewStyles}
         {...nativeConfig.props}
       />
