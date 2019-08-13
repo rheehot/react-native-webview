@@ -331,6 +331,7 @@ export interface IOSNativeWebViewProps extends CommonNativeWebViewProps {
   injectedJavaScriptForMainFrameOnly?: boolean;
   injectedJavaScriptBeforeContentLoadedForMainFrameOnly?: boolean;
   onFileDownload?: (event: FileDownloadEvent) => void;
+  customSchemeEnabled?: boolean;
 }
 
 export interface MacOSNativeWebViewProps extends CommonNativeWebViewProps {
@@ -1036,4 +1037,6 @@ export interface WebViewSharedProps extends ViewProps {
    * Append to the existing user-agent. Overridden if `userAgent` is set.
    */
   applicationNameForUserAgent?: string;
+
+  customSchemeEnabled?: boolean;
 }

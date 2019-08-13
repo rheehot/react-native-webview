@@ -90,6 +90,7 @@ RCT_EXPORT_VIEW_PROPERTY(contentMode, WKContentMode)
 RCT_EXPORT_VIEW_PROPERTY(messagingEnabled, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(onMessage, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onScroll, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(customSchemeEnabled, BOOL)
 
 RCT_EXPORT_METHOD(postMessage:(nonnull NSNumber *)reactTag message:(NSString *)message)
 {

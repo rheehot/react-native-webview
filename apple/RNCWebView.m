@@ -942,10 +942,23 @@ static NSDictionary* customCertificatesForHost;
   NSURLRequest *request = navigationAction.request;
   BOOL isTopFrame = [request.URL isEqual:request.mainDocumentURL];
 
+  NSURL *url = request.URL;
+  NSString *urlString = url.absoluteString;
+  NSString *scheme = url.scheme;
+
+  if (_customSchemeEnabled &&
+      ![scheme isEqualToString:@"https"] &&
+      ![scheme isEqualToString:@"http"] &&
+      ![urlString isEqualToString:@"about:blank"]) {
+    [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
+    decisionHandler(WKNavigationResponsePolicyCancel);
+    return;
+  }
+
   if (_onShouldStartLoadWithRequest) {
     NSMutableDictionary<NSString *, id> *event = [self baseEvent];
     [event addEntriesFromDictionary: @{
-      @"url": (request.URL).absoluteString,
+      @"url": urlString,
       @"mainDocumentURL": (request.mainDocumentURL).absoluteString,
       @"navigationType": navigationTypes[@(navigationType)],
       @"isTopFrame": @(isTopFrame)
@@ -963,7 +976,7 @@ static NSDictionary* customCertificatesForHost;
     if (isTopFrame) {
       NSMutableDictionary<NSString *, id> *event = [self baseEvent];
       [event addEntriesFromDictionary: @{
-        @"url": (request.URL).absoluteString,
+        @"url": urlString,
         @"navigationType": navigationTypes[@(navigationType)]
       }];
       _onLoadingStart(event);
