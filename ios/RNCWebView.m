@@ -1008,10 +1008,23 @@ static NSDictionary* customCertificatesForHost;
   WKNavigationType navigationType = navigationAction.navigationType;
   NSURLRequest *request = navigationAction.request;
 
+  NSURL *url = request.URL;
+  NSString *urlString = url.absoluteString;
+  NSString *scheme = url.scheme;
+
+  if (_customSchemeEnabled &&
+      ![scheme isEqualToString:@"https"] &&
+      ![scheme isEqualToString:@"http"] &&
+      ![urlString isEqualToString:@"about:blank"]) {
+    [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
+    decisionHandler(WKNavigationResponsePolicyCancel);
+    return;
+  }
+
   if (_onShouldStartLoadWithRequest) {
     NSMutableDictionary<NSString *, id> *event = [self baseEvent];
     [event addEntriesFromDictionary: @{
-      @"url": (request.URL).absoluteString,
+      @"url": urlString,
       @"mainDocumentURL": (request.mainDocumentURL).absoluteString,
       @"navigationType": navigationTypes[@(navigationType)]
     }];
@@ -1025,11 +1038,11 @@ static NSDictionary* customCertificatesForHost;
 
   if (_onLoadingStart) {
     // We have this check to filter out iframe requests and whatnot
-    BOOL isTopFrame = [request.URL isEqual:request.mainDocumentURL];
+    BOOL isTopFrame = [url isEqual:request.mainDocumentURL];
     if (isTopFrame) {
       NSMutableDictionary<NSString *, id> *event = [self baseEvent];
       [event addEntriesFromDictionary: @{
-        @"url": (request.URL).absoluteString,
+        @"url": urlString,
         @"navigationType": navigationTypes[@(navigationType)]
       }];
       _onLoadingStart(event);
