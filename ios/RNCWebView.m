@@ -243,10 +243,10 @@ static NSDictionary* customCertificatesForHost;
 
     WKUserScript *script = [[WKUserScript alloc] initWithSource:source injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
     [wkWebViewConfig.userContentController addUserScript:script];
-      
+
     if (_injectedJavaScriptBeforeContentLoaded) {
       // If user has provided an injectedJavascript prop, execute it at the start of the document
-      WKUserScript *injectedScript = [[WKUserScript alloc] initWithSource:_injectedJavaScriptBeforeContentLoaded injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
+      WKUserScript *injectedScript = [[WKUserScript alloc] initWithSource:_injectedJavaScriptBeforeContentLoaded injectionTime:WKUserScriptInjectionTimeAtDocumentEnd forMainFrameOnly:NO];
       [wkWebViewConfig.userContentController addUserScript:injectedScript];
     }
   }
@@ -328,7 +328,7 @@ static NSDictionary* customCertificatesForHost;
       [wkWebViewConfig.userContentController addUserScript:cookieInScript];
     }
   }
-  
+
   return wkWebViewConfig;
 }
 
@@ -1076,7 +1076,7 @@ static NSDictionary* customCertificatesForHost;
         _onHttpError(event);
       }
     }
-  }  
+  }
 
   decisionHandler(WKNavigationResponsePolicyAllow);
 }
