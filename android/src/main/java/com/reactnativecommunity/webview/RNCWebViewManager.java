@@ -41,12 +41,15 @@ import com.facebook.react.views.scroll.ScrollEvent;
 import com.facebook.react.views.scroll.ScrollEventType;
 import com.facebook.react.views.scroll.OnScrollDispatchHelper;
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.CatalystInstance;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.WritableNativeArray;
+import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.common.build.ReactBuildConfig;
 import com.facebook.react.module.annotations.ReactModule;
@@ -1030,6 +1033,8 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     protected boolean messagingEnabled = false;
     protected @Nullable
     RNCWebViewClient mRNCWebViewClient;
+    protected @Nullable
+    ReactContext reactContext;
     protected boolean sendContentSizeChangeEvents = false;
     private OnScrollDispatchHelper mOnScrollDispatchHelper;
     protected boolean hasScrollEvent = false;
@@ -1042,6 +1047,7 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
      */
     public RNCWebView(ThemedReactContext reactContext) {
       super(reactContext);
+      this.reactContext = reactContext;
     }
 
     public void setSendContentSizeChangeEvents(boolean sendContentSizeChangeEvents) {
@@ -1144,6 +1150,8 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     public void onMessage(String message) {
       if (mRNCWebViewClient != null) {
         WebView webView = this;
+        RNCWebView mContext = this;
+
         webView.post(new Runnable() {
           @Override
           public void run() {
@@ -1152,14 +1160,35 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
             }
             WritableMap data = mRNCWebViewClient.createWebViewEvent(webView, webView.getUrl());
             data.putString("data", message);
-            dispatchEvent(webView, new TopMessageEvent(webView.getId(), data));
+
+            if (!mContext.sendDirectMessage(data)) {
+              dispatchEvent(webView, new TopMessageEvent(webView.getId(), data));
+            }
           }
         });
       } else {
         WritableMap eventData = Arguments.createMap();
         eventData.putString("data", message);
-        dispatchEvent(this, new TopMessageEvent(this.getId(), eventData));
+
+        if (!this.sendDirectMessage(eventData)) {
+          dispatchEvent(this, new TopMessageEvent(this.getId(), eventData));
+        }
       }
+    }
+
+    protected boolean sendDirectMessage(WritableMap data) {
+      if (!reactContext.hasActiveCatalystInstance()) {
+        return false;
+      }
+
+      WritableNativeMap event = new WritableNativeMap();
+      event.putMap("nativeEvent", data);
+
+      WritableNativeArray params = new WritableNativeArray();
+      params.pushMap(event);
+
+      reactContext.getCatalystInstance().callFunction("WebViewMessageHandler", "onMessage", params);
+      return true;
     }
 
     protected void onScrollChanged(int x, int y, int oldX, int oldY) {
