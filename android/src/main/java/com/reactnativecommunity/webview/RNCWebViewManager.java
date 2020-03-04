@@ -41,12 +41,15 @@ import com.facebook.react.views.scroll.ScrollEvent;
 import com.facebook.react.views.scroll.ScrollEventType;
 import com.facebook.react.views.scroll.OnScrollDispatchHelper;
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.CatalystInstance;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.WritableNativeArray;
+import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.common.build.ReactBuildConfig;
 import com.facebook.react.module.annotations.ReactModule;
@@ -1030,6 +1033,8 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     protected boolean messagingEnabled = false;
     protected @Nullable
     RNCWebViewClient mRNCWebViewClient;
+    protected @Nullable
+    CatalystInstance mCatalystInstance;
     protected boolean sendContentSizeChangeEvents = false;
     private OnScrollDispatchHelper mOnScrollDispatchHelper;
     protected boolean hasScrollEvent = false;
@@ -1042,6 +1047,7 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
      */
     public RNCWebView(ThemedReactContext reactContext) {
       super(reactContext);
+      mCatalystInstance = reactContext.getCatalystInstance();
     }
 
     public void setSendContentSizeChangeEvents(boolean sendContentSizeChangeEvents) {
@@ -1065,6 +1071,7 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     @Override
     public void onHostDestroy() {
       cleanupCallbacksAndDestroy();
+      mCatalystInstance = null;
     }
 
     @Override
@@ -1144,6 +1151,8 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     public void onMessage(String message) {
       if (mRNCWebViewClient != null) {
         WebView webView = this;
+        RNCWebView mContext = this;
+
         webView.post(new Runnable() {
           @Override
           public void run() {
@@ -1152,14 +1161,34 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
             }
             WritableMap data = mRNCWebViewClient.createWebViewEvent(webView, webView.getUrl());
             data.putString("data", message);
-            dispatchEvent(webView, new TopMessageEvent(webView.getId(), data));
+
+            if (mCatalystInstance != null) {
+              mContext.sendDirectMessage(data);
+            } else {
+              dispatchEvent(webView, new TopMessageEvent(webView.getId(), data));
+            }
           }
         });
       } else {
         WritableMap eventData = Arguments.createMap();
         eventData.putString("data", message);
-        dispatchEvent(this, new TopMessageEvent(this.getId(), eventData));
+
+        if (mCatalystInstance != null) {
+          this.sendDirectMessage(eventData);
+        } else {
+          dispatchEvent(this, new TopMessageEvent(this.getId(), eventData));
+        }
       }
+    }
+
+    protected void sendDirectMessage(WritableMap data) {
+      WritableNativeMap event = new WritableNativeMap();
+      event.putMap("nativeEvent", data);
+
+      WritableNativeArray params = new WritableNativeArray();
+      params.pushMap(event);
+
+      mCatalystInstance.callFunction("WebViewMessageHandler", "onMessage", params);
     }
 
     protected void onScrollChanged(int x, int y, int oldX, int oldY) {
