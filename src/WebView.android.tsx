@@ -9,7 +9,7 @@ import {
   ImageSourcePropType,
   findNodeHandle,
 } from 'react-native';
-
+import BatchedBridge from 'react-native/Libraries/BatchedBridge/BatchedBridge';
 import invariant from 'invariant';
 
 import {
@@ -54,6 +54,8 @@ class WebView extends React.Component<AndroidWebViewProps, State> {
     cacheEnabled: true,
     androidHardwareAccelerationDisabled: false,
     originWhitelist: defaultOriginWhitelist,
+    directMessageEnabled: false,
+    directMessageId: '',
   };
 
   static isFileUploadSupported = async () => {
@@ -69,6 +71,12 @@ class WebView extends React.Component<AndroidWebViewProps, State> {
   };
 
   webViewRef = React.createRef<NativeWebViewAndroid>();
+
+  componentDidMount = () => {
+    if (this.props.directMessageEnabled) {
+      BatchedBridge.registerCallableModule(`WebViewMessageHandler${this.props.directMessageId}`, this);
+    }
+  }
 
   getCommands = () => UIManager.getViewManagerConfig('RNCWebView').Commands;
 
